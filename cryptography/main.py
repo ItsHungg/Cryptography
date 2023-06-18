@@ -1,11 +1,11 @@
 from tkinter import messagebox
-
-import cryptography.fernet
 import customtkinter as ctk
 import tkinter as tk
 
 from cryptography.fernet import Fernet
 from PIL import Image
+
+import cryptography.fernet
 import webbrowser
 import random
 import time
@@ -15,8 +15,14 @@ ctk.set_appearance_mode(APPEARANCE_MODE)
 ctk.set_default_color_theme('blue')
 
 PROJECT_NAME = 'Cryptography'
-PROJECT_VERSION = '1.0.0'
-SUBTEXTS = ['Fast', 'Safe', 'Secure', 'Reliable', 'Efficient']
+PROJECT_VERSION = '1.1.0'
+SUBTEXTS = ['Free', 'Fast', 'Simple', 'Safe', 'Secure', 'Reliable', 'Efficient']
+
+
+def changeMode(mode):
+    global APPEARANCE_MODE
+    ctk.set_appearance_mode(mode)
+    APPEARANCE_MODE = mode
 
 
 # noinspection PyTypeChecker,PyMethodMayBeStatic
@@ -64,7 +70,7 @@ class Client(ctk.CTkToplevel):
                                               image=ctk.CTkImage(
                                                   light_image=Image.open('assets\\textures\\mode_light.png'),
                                                   dark_image=Image.open('assets\\textures\\mode_dark.png')),
-                                              cursor='hand2', command=lambda: self.changeMode('dark' if APPEARANCE_MODE != 'dark' else 'light'))
+                                              cursor='hand2', command=lambda: changeMode('dark' if APPEARANCE_MODE != 'dark' else 'light'))
 
         # HEADER FRAME
         self.headerFrame.grid_columnconfigure(5, weight=1)
@@ -100,11 +106,13 @@ class Client(ctk.CTkToplevel):
                                        command=lambda: self.copy_clipboard(self.encryptedEntry.get()))
 
         ctk.CTkLabel(self.encryptFrame, text='Token:').grid(row=7, column=3, sticky='e', padx=(0, 15), pady=(30, 5))
-        self.encryptedTokenEntry = ctk.CTkEntry(self.encryptFrame, fg_color=('gray90', '#343638'), state='disabled', width=375)
+        self.encryptedTokenEntry = ctk.CTkEntry(self.encryptFrame, fg_color=('gray90', '#343638'), state='disabled',
+                                                width=375)
         self.encryptedTokenEntry.grid(row=7, column=4, sticky='w', pady=(30, 5))
 
         ctk.CTkLabel(self.encryptFrame, text='Message:').grid(row=9, column=3, sticky='e', padx=(0, 15))
-        self.encryptedEntry = ctk.CTkEntry(self.encryptFrame, fg_color=('gray90', '#343638'), state='disabled', width=375)
+        self.encryptedEntry = ctk.CTkEntry(self.encryptFrame, fg_color=('gray90', '#343638'), state='disabled',
+                                           width=375)
         self.encryptedEntry.grid(row=9, column=4, sticky='w')
 
         # DECRYPT FRAME
@@ -121,7 +129,8 @@ class Client(ctk.CTkToplevel):
         self.dencryptButton.grid(row=7, column=3, columnspan=2)
 
         ctk.CTkLabel(self.decryptFrame, text='Message:').grid(row=9, column=3, sticky='e', padx=(0, 15), pady=(30, 5))
-        self.decryptedEntry = ctk.CTkEntry(self.decryptFrame, fg_color=('gray90', '#343638'), state='disabled', width=375)
+        self.decryptedEntry = ctk.CTkEntry(self.decryptFrame, fg_color=('gray90', '#343638'), state='disabled',
+                                           width=375)
         self.decryptedEntry.grid(row=9, column=4, sticky='w', pady=(30, 5))
 
         # BIND
@@ -133,7 +142,7 @@ class Client(ctk.CTkToplevel):
 
     def close(self):
         askClose = messagebox.askyesnocancel('Warning',
-                                             f'You\'re trying to close {PROJECT_NAME}. Would you like to return to the main hub or completely exit?',
+                                             f'You\'re trying to close {PROJECT_NAME}. Would you like to return to the main hub instead?',
                                              icon='warning')
         if askClose:
             client.tryButton.configure(state='normal')
@@ -151,11 +160,6 @@ class Client(ctk.CTkToplevel):
             client.tryButton.configure(state='normal')
             self.destroy()
             client.deiconify()
-
-    def changeMode(self, mode):
-        global APPEARANCE_MODE
-        ctk.set_appearance_mode(mode)
-        APPEARANCE_MODE = mode
 
     def sidebar_event(self):
         if self.sidebarFrame.winfo_viewable():
@@ -269,7 +273,6 @@ def tryit():
 
 
 # noinspection PyTypeChecker
-
 class Application(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -280,6 +283,14 @@ class Application(ctk.CTk):
         self.resizable(False, False)
 
         self.iconbitmap('assets\\icon\\icon.ico')
+
+        self.changeModeHubButton = ctk.CTkButton(self, text='', width=0, fg_color='transparent',
+                                                 hover=False,
+                                                 image=ctk.CTkImage(
+                                                     light_image=Image.open('assets\\textures\\mode_light.png'),
+                                                     dark_image=Image.open('assets\\textures\\mode_dark.png')),
+                                                 cursor='hand2', command=lambda: changeMode('dark' if APPEARANCE_MODE != 'dark' else 'light'))
+        self.changeModeHubButton.grid(row=1, column=3, sticky='w', padx=5, pady=(3, 0))
 
         self.grid_columnconfigure(3, weight=1)
         self.headerText = ctk.CTkLabel(self, text=f'{PROJECT_NAME}', font=('Calibri', 50, 'bold'))
