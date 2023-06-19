@@ -15,7 +15,7 @@ ctk.set_appearance_mode(APPEARANCE_MODE)
 ctk.set_default_color_theme('blue')
 
 PROJECT_NAME = 'Cryptography'
-PROJECT_VERSION = '1.1.0'
+PROJECT_VERSION = '1.1.1'
 SUBTEXTS = ['Free', 'Fast', 'Simple', 'Safe', 'Secure', 'Reliable', 'Efficient']
 
 
@@ -146,20 +146,19 @@ class Client(ctk.CTkToplevel):
                                              icon='warning')
         if askClose:
             client.tryButton.configure(state='normal')
-            self.destroy()
             client.deiconify()
+            self.destroy()
         elif askClose is None:
             return
         else:
-            self.destroy()
             client.destroy()
             quit()
 
     def returnHome(self):
         if messagebox.askyesno(f'{PROJECT_NAME} {PROJECT_VERSION}', 'Do you want to return back to the main hub?'):
             client.tryButton.configure(state='normal')
-            self.destroy()
             client.deiconify()
+            self.destroy()
 
     def sidebar_event(self):
         if self.sidebarFrame.winfo_viewable():
