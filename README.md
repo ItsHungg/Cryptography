@@ -29,14 +29,12 @@ pip install <library>
 ### FAQ (Frequently-Asked-Questions)
 #### 1. Is Cryptography safe?
 > Based on the code, I can be confident that Cryptography is safe and secure.
-#### 2. An `AttributeError` error that would raise `_tkinter.TclError` and crash the program when I return to the main hub.
-> The investigation to fix that error has begun. Currently, you need to run the file again and it should work perfectly.
 <hr>
 
 ## Information
 Project Name: **Cryptography**<br>
-Project Main File's Version: `1.1.0`<br>
-Last Checked Version: `1.1.0`<br><br>
+Project Main File's Version: `1.1.1`<br>
+Last Checked Version: `1.1.1`<br><br>
 
 <hr>
 
