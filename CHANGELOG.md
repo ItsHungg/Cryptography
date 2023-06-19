@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.<br>
 **Format:** `[x.y.z] - mm/dd/yyyy`
 <hr>
 
+## [1.1.1] - 06/19/2023
+### Fixed
+- Fixed `AttributeError` and `_tkinter.TclError`. If those errors are raised again, the application won't be affected
+
 ## [1.1.0] - 06/18/2023
 ### Added
 - Added 2 more "brand" attributes
@@ -22,4 +26,3 @@ All notable changes to this project will be documented in this file.<br>
 # ToDo List
 - Add base64 encryption and decryption
 - Add a settings window so users can customize the application
-- Fix the rare error message while opening the main application
