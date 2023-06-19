@@ -20,5 +20,6 @@ All notable changes to this project will be documented in this file.<br>
 <hr>
 
 # ToDo List
-- Add settings window so users can customize the application
-- Fix the rare error message when open the main application
+- Add base64 encryption and decryption
+- Add a settings window so users can customize the application
+- Fix the rare error message while opening the main application
