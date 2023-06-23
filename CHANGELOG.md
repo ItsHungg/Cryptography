@@ -26,3 +26,4 @@ All notable changes to this project will be documented in this file.<br>
 # ToDo List
 - Add base64 encryption and decryption
 - Add a settings window so users can customize the application
+- Create a fully completed wiki
