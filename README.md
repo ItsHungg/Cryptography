@@ -45,8 +45,10 @@ pip install <library>
 
 ## Information
 Project Name: **Cryptography**<br>
-Project Main File's Version: `1.1.1`<br>
 Last Checked Version: `1.1.1`<br><br>
+
+- pip:  `23.1.2`<br>
+- customtkinter: `5.2.0`
 
 <hr>
 
