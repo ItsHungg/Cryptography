@@ -41,14 +41,24 @@ pip install <library>
 > Based on the code, I can be confident that Cryptography is safe and secure.
 #### 2. Antivirus software detected Cryptography as a virus.
 > Cryptography uses NSIS to create the installer and PyInstaller to create the `.exe` file. They are all open-source.<br>You can check it [here](https://github.com/kichik/nsis) (NSIS) and [here](https://github.com/pyinstaller/pyinstaller) (PyInstaller). I am confident that Cryptography is completely safe and free to use.
+#### 3. Which method should I use to install, zipped file or installer?
+> I recommend you use an installer to install Cryptography because it's more convenient and you won't need to install any Python library to use.
+
 <hr>
 
 ## Information
 Project Name: **Cryptography**<br>
-Last Checked Version: `1.1.1`<br><br>
+Last Checked Version: `1.2.0`<br>
 
+### Libraries
 - pip:  `23.1.2`<br>
+- cryptography: `41.0.1`
 - customtkinter: `5.2.0`
+- Pillow (PIL): `9.5.0`
+- tkinter (tk): `0.1.0`
+### Packages
+- pyinstaller: `5.13.0`
+- NSIS: `3.08`
 
 <hr>
 
