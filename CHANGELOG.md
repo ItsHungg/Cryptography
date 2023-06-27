@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.<br>
 **Format:** `[x.y.z] - mm/dd/yyyy`
 <hr>
 
+## [1.2.0] - 06/27/2023
+### Added
+- Added a setting window
+### Changed
+- Appearance mode, theme, etc are now stored and saved in files
+- The "brand" attributes now display slightly faster
+
 ## [1.1.1] - 06/19/2023
 ### Fixed
 - Fixed `AttributeError` and `_tkinter.TclError`. If those errors are raised again, the application won't be affected
@@ -25,5 +32,4 @@ All notable changes to this project will be documented in this file.<br>
 
 # ToDo List
 - Add base64 encryption and decryption
-- Add a settings window so users can customize the application
 - Create a fully completed wiki
