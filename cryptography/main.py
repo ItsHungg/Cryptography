@@ -1,4 +1,3 @@
-import tkinter
 from tkinter import messagebox, filedialog
 import customtkinter as ctk
 import tkinter as tk
@@ -8,8 +7,18 @@ from PIL import Image
 
 import cryptography.fernet
 import webbrowser
+import platform
 import random
 import time
+
+PROJECT_NAME = 'Cryptography'
+PROJECT_VERSION = __version__ = '1.2.1'
+
+if platform.system().strip().lower() != 'windows' or not any(k in platform.release().strip().lower() for k in ['10', '11']):
+    if not messagebox.askyesno('Important Warning',
+                               f'Many features here might be broken because your current Operating System is not supported, or outdated.\n\nInfo:\n - Operating System: {platform.system()}\n - Release: {platform.release()}\n - Version: {platform.version()}\n\nConfiguration required:\n - Operating System: Windows\n - Version/Release: 10 or above\n\nWould you like to continue using {PROJECT_NAME}?',
+                               icon='warning', default='no'):
+        quit()
 
 with open('profile\\mode_config.txt', 'r') as md:
     APPEARANCE_MODE = md.read().strip()
@@ -22,8 +31,6 @@ ASK_RETURN = int(CONFIGS[0])
 ctk.set_appearance_mode(APPEARANCE_MODE)
 ctk.set_default_color_theme(THEME)
 
-PROJECT_NAME = 'Cryptography'
-PROJECT_VERSION = '1.2.0'
 SUBTEXTS = ['Free', 'Fast', 'Simple', 'Safe', 'Secure', 'Reliable', 'Efficient']
 
 client = False
@@ -113,6 +120,11 @@ class CreateToolTip(object):
 # noinspection PyTypeChecker, PyMethodMayBeStatic
 class Settings(ctk.CTkToplevel):
     def __init__(self, parent):
+        global settings
+        if settings:
+            return
+        settings = True
+
         ctk.CTkToplevel.__init__(self, parent)
         self.after(250, lambda: [self.lift(), self.iconbitmap('assets\\icon\\icon.ico')])
 
@@ -135,6 +147,8 @@ class Settings(ctk.CTkToplevel):
 
         self.themeFrame = ctk.CTkFrame(self, fg_color='transparent')
         self.themeFrame.grid(row=5, column=3, sticky='nsew', padx=15, pady=15)
+
+        self.isThemeEditorOpened = False
 
         ctk.CTkLabel(self.themeFrame, text='Themes', font=('Calibri', 20, 'bold')).grid(row=1, column=3, pady=(0, 5),
                                                                                         columnspan=2)
@@ -169,7 +183,19 @@ class Settings(ctk.CTkToplevel):
         CreateToolTip(self.askReturnMainHubSwitch, text='Ask to return back to the main hub after closing the main window.')
         self.askReturnMainHubSwitch.grid(row=3, column=3)
 
+        self.protocol('WM_DELETE_WINDOW', self.on_exit)
+
+    def on_exit(self):
+        global settings
+        self.destroy()
+
+        settings = False
+
     def themeEditor(self):
+        if self.isThemeEditorOpened:
+            return
+        self.isThemeEditorOpened = True
+
         themeEditWindow = ctk.CTkToplevel(self)
         themeEditWindow.title('Theme Editor 1.0')
         themeEditWindow.resizable(False, False)
@@ -253,7 +279,7 @@ class Settings(ctk.CTkToplevel):
                 child.configure(state='disabled')
             cancelButton.configure(fg_color='gray70')
             saveThemeButton.configure(text='Saved Theme', state='disabled', cursor='')
-            self.after(1000, themeEditWindow.destroy)
+            self.after(1000, self.on_exit)
 
         pathFrame = ctk.CTkFrame(themeEditWindow)
         pathFrame.grid(row=3, column=5, sticky='n', padx=(7, 15), pady=10)
@@ -284,6 +310,12 @@ class Settings(ctk.CTkToplevel):
                                                       savePathButton.configure(state='disabled', cursor=''),
                                                       pathEntry.delete(0, 'end'), pathEntry.focus()])
         cancelButton.grid(row=3, column=5, sticky='e', pady=15, padx=(5, 15))
+
+        def exitEditor():
+            themeEditWindow.destroy()
+            self.isThemeEditorOpened = False
+
+        themeEditWindow.protocol('WM_DELETE_WINDOW', exitEditor)
 
 
 # noinspection PyTypeChecker, PyMethodMayBeStatic
@@ -362,10 +394,12 @@ class Client(ctk.CTkToplevel):
         self.encryptedTokenMenu = tk.Menu(tearoff=0)
         self.encryptedTokenMenu.add_command(label='Copy token',
                                             command=lambda: self.copy_clipboard(self.encryptedTokenEntry.get()))
+        self.encryptedTokenMenu.add_command(label='Clear token', command=lambda: [self.encryptedTokenEntry.configure(state='normal'), self.encryptedTokenEntry.delete(0, 'end'), self.encryptedTokenEntry.configure(state='disabled')])
 
         self.encryptedMenu = tk.Menu(tearoff=0)
         self.encryptedMenu.add_command(label='Copy message',
                                        command=lambda: self.copy_clipboard(self.encryptedEntry.get()))
+        self.encryptedMenu.add_command(label='Clear message', command=lambda: [self.encryptedEntry.configure(state='normal'), self.encryptedEntry.delete(0, 'end'), self.encryptedEntry.configure(state='disabled')])
 
         ctk.CTkLabel(self.encryptFrame, text='Token:').grid(row=7, column=3, sticky='e', padx=(0, 15), pady=(30, 5))
         self.encryptedTokenEntry = ctk.CTkEntry(self.encryptFrame, fg_color=('gray90', '#343638'), state='disabled',
@@ -452,6 +486,9 @@ class Client(ctk.CTkToplevel):
             self.settingButton.grid(row=101, column=10, sticky='s', pady=(5, 10))
 
     def copy_clipboard(self, item: str):
+        if item.strip() == '':
+            if not messagebox.askyesno('Warning', 'The text you\'re about to copy is empty. Would you still like to copy?', icon='warning', default='no'):
+                return
         self.clipboard_clear()
         self.clipboard_append(item)
 
@@ -601,9 +638,9 @@ class Application(ctk.CTk):
         self.authorLabel = ctk.CTkLabel(self.bottomFrame, text=f'{PROJECT_NAME} {time.strftime("%Y")}', cursor='hand2')
         self.authorLabel.cget('font').configure(weight='bold', size=17)
 
-        self.authorLabel.bind('<Button-1>', lambda _: webbrowser.open('https://github.com/ItsHungg'))
+        self.authorLabel.bind('<Button-1>', lambda _: webbrowser.open('https://sites.google.com/view/py-cryptography'))
         self.authorLabel.bind('<Button-2>',
-                              lambda _: messagebox.showinfo('Hyperlink', 'Link: https://github.com/ItsHungg'))
+                              lambda _: messagebox.showinfo('Hyperlink', 'Link: https://sites.google.com/view/py-cryptography'))
         self.authorLabel.bind('<Enter>', lambda _: self.authorLabel.cget('font').configure(underline=True))
         self.authorLabel.bind('<Leave>', lambda _: self.authorLabel.cget('font').configure(underline=False))
         self.authorLabel.grid(row=3, column=3, pady=5)
@@ -613,19 +650,23 @@ class Application(ctk.CTk):
             self.current_subtext = 0
         if len(self.subtitleText.cget('text')) == len(SUBTEXTS[self.current_subtext]):
             self.after(1000, self.delete_subtitle_movement_event)
+            # self.after_objects.add(self.after(1000, self.delete_subtitle_movement_event))
             self.current_index = 0
             return
         self.current_index += 1
         self.subtitleText.configure(text=SUBTEXTS[self.current_subtext][:self.current_index])
-        self.after_objects.add(self.after(75, self.add_subtitle_movement_event))
+        self.after(75, self.add_subtitle_movement_event)
+        # self.after_objects.add(self.after(75, self.add_subtitle_movement_event))
 
     def delete_subtitle_movement_event(self):
         if self.subtitleText.cget('text').strip() == '':
             self.current_subtext += 1
-            self.after_objects.add(self.after(1000, self.add_subtitle_movement_event))
+            self.after(1000, self.add_subtitle_movement_event)
+            # self.after_objects.add(self.after(1000, self.add_subtitle_movement_event))
         else:
             self.subtitleText.configure(text=self.subtitleText.cget('text')[:-1])
-            self.after_objects.add(self.after(75, self.delete_subtitle_movement_event))
+            self.after(75, self.delete_subtitle_movement_event)
+            # self.after_objects.add(self.after(75, self.delete_subtitle_movement_event))
 
 
 client = Application()
