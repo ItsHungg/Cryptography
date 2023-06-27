@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.<br>
 **Format:** `[x.y.z] - mm/dd/yyyy`
 <hr>
 
+## [1.2.1] - 06/27/2023
+### Added
+- Added an OS filter. If the OS is not Windows, returns a warning
+- Users now can clear the encrypted message and token results by right-clicking on it
+### Changed
+- The setting window and the theme editor can only be opened once
+- Saving theme without auto-restart will close the setting window
+- Copying an empty message or token will result in a warning
+### Fixed
+- Fixed the looped set appending to prevent the code from being overload because it's too large
+
 ## [1.2.0] - 06/27/2023
 ### Added
 - Added a setting window
