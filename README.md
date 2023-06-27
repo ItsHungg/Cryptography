@@ -48,7 +48,7 @@ pip install <library>
 
 ## Information
 Project Name: **Cryptography**<br>
-Last Checked Version: `1.2.0`<br>
+Last Checked Version: `1.2.1`<br>
 
 ### Libraries
 - pip:  `23.1.2`<br>
