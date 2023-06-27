@@ -1,4 +1,5 @@
-from tkinter import messagebox
+import tkinter
+from tkinter import messagebox, filedialog
 import customtkinter as ctk
 import tkinter as tk
 
@@ -10,22 +11,282 @@ import webbrowser
 import random
 import time
 
-APPEARANCE_MODE = 'light'
+with open('profile\\mode_config.txt', 'r') as md:
+    APPEARANCE_MODE = md.read().strip()
+with open('profile\\theme_config.txt', 'r') as th:
+    THEME = th.read().strip()
+with open('profile\\configs.txt', 'r') as cf:
+    CONFIGS = cf.readlines()
+ASK_RETURN = int(CONFIGS[0])
+
 ctk.set_appearance_mode(APPEARANCE_MODE)
-ctk.set_default_color_theme('blue')
+ctk.set_default_color_theme(THEME)
 
 PROJECT_NAME = 'Cryptography'
-PROJECT_VERSION = '1.1.1'
+PROJECT_VERSION = '1.2.0'
 SUBTEXTS = ['Free', 'Fast', 'Simple', 'Safe', 'Secure', 'Reliable', 'Efficient']
 
+client = False
+main = False
+settings = False
 
-def changeMode(mode):
+
+def changeMode(mode, save=False):
     global APPEARANCE_MODE
     ctk.set_appearance_mode(mode)
     APPEARANCE_MODE = mode
+    if save:
+        with open('profile\\mode_config.txt', 'w') as saveMode:
+            saveMode.write(APPEARANCE_MODE.strip())
+    if settings:
+        settings.chooseModeMenu.set(APPEARANCE_MODE.capitalize())
 
 
-# noinspection PyTypeChecker,PyMethodMayBeStatic
+# noinspection PyBroadException
+def restart():
+    global client
+    client.destroy()
+
+    time.sleep(1)
+    client = Application()
+    client.mainloop()
+
+
+def askReturnHubConfig():
+    global ASK_RETURN
+    ASK_RETURN = 0 if ASK_RETURN else 1
+    with open('profile\\configs.txt', 'r+') as cfread:
+        config_lines = cfread.readlines()
+        config_lines[0] = f'{ASK_RETURN}'
+        cfread.seek(0)
+        cfread.write('\n'.join(config_lines))
+
+
+class CreateToolTip(object):
+    def __init__(self, widget, text: str):
+        self.waittime = 500  # miliseconds
+        self.wraplength = 200  # pixels
+        self.widget = widget
+        self.text = text
+        self.widget.bind("<Enter>", self.enter)
+        self.widget.bind("<Leave>", self.leave)
+        self.widget.bind("<ButtonPress>", self.leave)
+        self.id = None
+        self.tw = None
+
+    def enter(self, _):
+        self.schedule()
+
+    def leave(self, _):
+        self.unschedule()
+        self.hidetip()
+
+    def schedule(self):
+        self.unschedule()
+        self.id = self.widget.after(self.waittime, self.showtip)
+
+    def unschedule(self):
+        id = self.id
+        self.id = None
+        if id:
+            self.widget.after_cancel(id)
+
+    def showtip(self):
+        x, y, cx, cy = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 20
+        self.tw = tk.Toplevel(self.widget)
+        self.tw.wm_overrideredirect(True)
+        self.tw.wm_geometry("+%d+%d" % (x, y))
+        label = tk.Label(self.tw, text=self.text, justify='left',
+                         background="#ffffff", relief='solid', borderwidth=1,
+                         wraplength=self.wraplength)
+        label.pack(ipadx=1)
+
+    def hidetip(self):
+        tw = self.tw
+        self.tw = None
+        if tw:
+            tw.destroy()
+
+
+# noinspection PyTypeChecker, PyMethodMayBeStatic
+class Settings(ctk.CTkToplevel):
+    def __init__(self, parent):
+        ctk.CTkToplevel.__init__(self, parent)
+        self.after(250, lambda: [self.lift(), self.iconbitmap('assets\\icon\\icon.ico')])
+
+        self.title(f'Settings')
+        self.resizable(False, False)
+
+        # HEADER FRAME
+        self.headerFrame = ctk.CTkFrame(self, corner_radius=0, fg_color='transparent')
+        self.headerFrame.grid(row=3, column=3, sticky='nsew')
+
+        self.headerFrame.grid_columnconfigure(3, weight=1)
+        self.headerText = ctk.CTkLabel(self.headerFrame, text=f'Settings')
+        self.headerText.cget('font').configure(weight='bold', size=23)
+        self.headerText.grid(row=3, column=3, sticky='nsew', pady=(15, 10))
+
+        ctk.CTkFrame(self.headerFrame, fg_color=('black', 'gray'), corner_radius=25, height=3, width=0).grid(row=5,
+                                                                                                             column=3,
+                                                                                                             sticky='ew',
+                                                                                                             padx=5)
+
+        self.themeFrame = ctk.CTkFrame(self, fg_color='transparent')
+        self.themeFrame.grid(row=5, column=3, sticky='nsew', padx=15, pady=15)
+
+        ctk.CTkLabel(self.themeFrame, text='Themes', font=('Calibri', 20, 'bold')).grid(row=1, column=3, pady=(0, 5),
+                                                                                        columnspan=2)
+
+        self.themeFrame.grid_columnconfigure((3, 4), weight=1)
+        ctk.CTkLabel(self.themeFrame, text='Edit your theme:').grid(row=3, column=3, padx=10)
+        self.chooseThemeButton = ctk.CTkButton(self.themeFrame, text='Theme Editor', width=100, cursor='hand2',
+                                               command=self.themeEditor)
+        self.chooseThemeButton.grid(row=3, column=4, padx=(0, 10))
+
+        self.modeFrame = ctk.CTkFrame(self, fg_color='transparent')
+        self.modeFrame.grid(row=7, column=3, sticky='nsew', padx=15, pady=(0, 15))
+
+        ctk.CTkLabel(self.modeFrame, text='Mode', font=('Calibri', 20, 'bold')).grid(row=1, column=3, pady=(0, 5),
+                                                                                     columnspan=2)
+
+        self.modeFrame.grid_columnconfigure((3, 4), weight=1)
+        ctk.CTkLabel(self.modeFrame, text='Choose your mode:').grid(row=3, column=3, padx=10)
+        self.chooseModeMenu = ctk.CTkOptionMenu(self.modeFrame, values=['Light', 'Dark', 'System'], width=100,
+                                                command=lambda _: changeMode(self.chooseModeMenu.get().lower(), True))
+        self.chooseModeMenu.set(APPEARANCE_MODE.capitalize())
+        self.chooseModeMenu.grid(row=3, column=4, padx=(0, 10))
+
+        self.miscFrame = ctk.CTkFrame(self, fg_color='transparent')
+        self.miscFrame.grid(row=11, column=3, sticky='nsew', padx=15, pady=(0, 15))
+
+        self.miscFrame.grid_columnconfigure(3, weight=1)
+        ctk.CTkLabel(self.miscFrame, text='Miscellaneous', font=('Calibri', 20, 'bold')).grid(row=1, column=3,
+                                                                                              pady=(0, 5))
+        self.askReturnMainHubSwitch = ctk.CTkSwitch(self.miscFrame, text='Return main hub', command=askReturnHubConfig)
+        self.askReturnMainHubSwitch.select() if ASK_RETURN else None
+        CreateToolTip(self.askReturnMainHubSwitch, text='Ask to return back to the main hub after closing the main window.')
+        self.askReturnMainHubSwitch.grid(row=3, column=3)
+
+    def themeEditor(self):
+        themeEditWindow = ctk.CTkToplevel(self)
+        themeEditWindow.title('Theme Editor 1.0')
+        themeEditWindow.resizable(False, False)
+
+        self.after(100, themeEditWindow.lift)
+        ctk.CTkLabel(themeEditWindow, text='Theme Editor', font=('Calibri', 25, 'bold')).grid(row=1, column=3,
+                                                                                              columnspan=3, pady=15)
+
+        # EDIT FRAME
+        editFrame = ctk.CTkFrame(themeEditWindow)
+        editFrame.grid(row=3, column=3, padx=(15, 7), pady=(5, 10), rowspan=5)
+
+        ctk.CTkLabel(editFrame, text='Viewer:').grid(row=1, column=3, sticky='ew', pady=5)
+        editValue = ctk.CTkTextbox(editFrame, height=250, wrap='word')
+        editValue.insert('0.0', f'Welcome to Theme Editor!')
+        editValue.grid(row=3, column=3, sticky='nsew', padx=15, pady=(0, 15))
+
+        # PATH FRAME
+        def validator(item):
+            savePathButton.configure(state='normal', cursor='hand2')
+            if item.strip() == '':
+                savePathButton.configure(state='disabled', cursor='')
+                return True
+            elif item.count(':') > 1:
+                return False
+            elif any(k in item for k in '<>\"|?*'):
+                return False
+            return True
+
+        def load_path():
+            try:
+                editValue.delete('0.0', 'end')
+                if pathEntry.get().strip() != THEME:
+                    saveThemeButton.configure(state='normal', cursor='hand2')
+                else:
+                    saveThemeButton.configure(state='disabled', cursor='')
+                if pathEntry.get() in ['blue', 'dark-blue', 'green']:
+                    editValue.insert('0.0', f'Default theme: {pathEntry.get()}')
+                    return
+                with open(pathEntry.get(), 'r') as json_data:
+                    editValue.insert('0.0', json_data.read().strip())
+            except FileNotFoundError:
+                editValue.insert('0.0', 'Error: FileNotFound')
+                saveThemeButton.configure(state='disabled', cursor='')
+                messagebox.showerror('Error', f'Invalid theme path: \"{pathEntry.get()}\"')
+
+        def openfile():
+            # noinspection PyRedundantParentheses
+            filename = filedialog.askopenfilename(title='Choose a theme', initialdir='\\',
+                                                  filetypes=[('JSON files', '*.json')])
+            if filename != '':
+                pathEntry.delete(0, 'end')
+                pathEntry.insert(0, filename)
+                load_path()
+
+        def saveTheme():
+            # noinspection PyBroadException
+            try:
+                global THEME
+                new_theme = pathEntry.get().strip()
+                ctk.set_default_color_theme(new_theme)
+                THEME = new_theme
+
+                with open('profile\\theme_config.txt', 'w') as save_theme:
+                    save_theme.write(new_theme)
+            except:
+                messagebox.showerror('Error', f'Something went wrong. Please try again.')
+                return
+
+            askRestart = messagebox.askyesnocancel('Warning',
+                                                   f'You need to restart {PROJECT_NAME} to see the changes.\nDo you want to auto-restart now?\n\nWarning: An auto-restart may cause a lot of bugs. It\'s recommended to restart manually by reopening {PROJECT_NAME}.',
+                                                   icon='warning')
+            if askRestart:
+                themeEditWindow.destroy()
+                self.after(500, restart)
+                return
+            elif askRestart is None:
+                return
+
+            for child in [editValue, pathEntry, savePathButton, openPathButton, cancelButton]:
+                child.configure(state='disabled')
+            cancelButton.configure(fg_color='gray70')
+            saveThemeButton.configure(text='Saved Theme', state='disabled', cursor='')
+            self.after(1000, themeEditWindow.destroy)
+
+        pathFrame = ctk.CTkFrame(themeEditWindow)
+        pathFrame.grid(row=3, column=5, sticky='n', padx=(7, 15), pady=10)
+
+        savePathButton = ctk.CTkButton(pathFrame, text='Load', width=75, height=25, cursor='hand2', command=load_path)
+        savePathButton.configure(state='disabled')
+        savePathButton.grid(row=5, column=3, pady=(0, 15), padx=7, sticky='e')
+
+        openPathButton = ctk.CTkButton(pathFrame, text='Open', width=75, height=25, cursor='hand2', command=openfile)
+        openPathButton.grid(row=5, column=4, pady=(0, 15), padx=7, sticky='w')
+
+        ctk.CTkLabel(pathFrame, text='Path (.json):').grid(row=1, column=3, sticky='ew', pady=5, columnspan=2)
+        pathEntry = ctk.CTkEntry(pathFrame, width=175, validate='key', validatecommand=(self.register(validator), '%P'))
+        pathEntry.insert(0, THEME)
+        pathEntry.grid(row=3, column=3, sticky='nsew', padx=15, pady=(0, 10), columnspan=2)
+
+        saveFrame = ctk.CTkFrame(themeEditWindow)
+        saveFrame.grid(row=7, column=5, sticky='sew', padx=(7, 15), pady=10)
+
+        saveThemeButton = ctk.CTkButton(saveFrame, text='Save Theme', width=125, state='disabled', command=saveTheme)
+        saveThemeButton.grid(row=3, column=3, padx=(15, 5), pady=15)
+
+        cancelButton = ctk.CTkButton(saveFrame, text='',
+                                     image=ctk.CTkImage(Image.open('assets\\textures\\trashbin.png')), width=40,
+                                     fg_color='#f52f2f', hover_color='#d62929', cursor='hand2',
+                                     command=lambda: [saveThemeButton.configure(state='disabled', cursor=''),
+                                                      editValue.delete('0.0', 'end'),
+                                                      savePathButton.configure(state='disabled', cursor=''),
+                                                      pathEntry.delete(0, 'end'), pathEntry.focus()])
+        cancelButton.grid(row=3, column=5, sticky='e', pady=15, padx=(5, 15))
+
+
+# noinspection PyTypeChecker, PyMethodMayBeStatic
 class Client(ctk.CTkToplevel):
     def __init__(self, parent):
         ctk.CTkToplevel.__init__(self, parent)
@@ -64,13 +325,14 @@ class Client(ctk.CTkToplevel):
                                            image=ctk.CTkImage(
                                                light_image=Image.open('assets\\textures\\setting_light.png'),
                                                dark_image=Image.open('assets\\textures\\setting_dark.png')),
-                                           cursor='hand2')
+                                           cursor='hand2', command=self.settings)
 
         self.changeModeButton = ctk.CTkButton(self.sidebarFrame, text='', width=0, fg_color='transparent', hover=False,
                                               image=ctk.CTkImage(
                                                   light_image=Image.open('assets\\textures\\mode_light.png'),
                                                   dark_image=Image.open('assets\\textures\\mode_dark.png')),
-                                              cursor='hand2', command=lambda: changeMode('dark' if APPEARANCE_MODE != 'dark' else 'light'))
+                                              cursor='hand2', command=lambda: changeMode(
+                'dark' if APPEARANCE_MODE != 'dark' else 'light'))
 
         # HEADER FRAME
         self.headerFrame.grid_columnconfigure(5, weight=1)
@@ -141,15 +403,19 @@ class Client(ctk.CTkToplevel):
         self.protocol('WM_DELETE_WINDOW', self.close)
 
     def close(self):
-        askClose = messagebox.askyesnocancel('Warning',
-                                             f'You\'re trying to close {PROJECT_NAME}. Would you like to return to the main hub instead?',
-                                             icon='warning')
-        if askClose:
-            client.tryButton.configure(state='normal')
-            client.deiconify()
-            self.destroy()
-        elif askClose is None:
-            return
+        if ASK_RETURN:
+            askClose = messagebox.askyesnocancel('Warning',
+                                                 f'You\'re trying to close {PROJECT_NAME}. Would you like to return to the main hub instead?',
+                                                 icon='warning')
+            if askClose:
+                client.tryButton.configure(state='normal')
+                client.deiconify()
+                self.destroy()
+            elif askClose is None:
+                return
+            else:
+                client.destroy()
+                quit()
         else:
             client.destroy()
             quit()
@@ -158,7 +424,12 @@ class Client(ctk.CTkToplevel):
         if messagebox.askyesno(f'{PROJECT_NAME} {PROJECT_VERSION}', 'Do you want to return back to the main hub?'):
             client.tryButton.configure(state='normal')
             client.deiconify()
+
             self.destroy()
+
+    def settings(self):
+        global settings
+        settings = Settings(self)
 
     def sidebar_event(self):
         if self.sidebarFrame.winfo_viewable():
@@ -171,7 +442,7 @@ class Client(ctk.CTkToplevel):
             self.sidebarToggleButton.grid_forget()
             self.in_sidebarButton.grid(row=0, column=10)
             self.homeButton.grid(row=2, column=10, pady=5)
-            ctk.CTkFrame(self.sidebarFrame, fg_color=['black', 'gray'], corner_radius=10, height=3, width=0).grid(row=3,
+            ctk.CTkFrame(self.sidebarFrame, fg_color=('black', 'gray'), corner_radius=10, height=3, width=0).grid(row=3,
                                                                                                                   column=10,
                                                                                                                   sticky='ew',
                                                                                                                   pady=3,
@@ -259,12 +530,17 @@ class Load(ctk.CTkToplevel):
         self.after(random.randint(3000, 7500), self.done)
         self.protocol('WM_DELETE_WINDOW', lambda: [self.destroy(), client.tryButton.configure(state='normal')])
 
-    # noinspection PyMethodMayBeStatic
+    def command(self):
+        global main
+        self.destroy()
+        client.withdraw()
+        main = Client(client)
+
     def done(self):
         self.mainProgressbar.stop()
         self.mainProgressbar.configure(mode='determinate')
         self.mainProgressbar.set(1)
-        self.after(random.randint(1000, 3000), lambda: [self.destroy(), client.withdraw(), Client(client)])
+        self.after(random.randint(1000, 3000), self.command)
 
 
 def tryit():
@@ -281,6 +557,8 @@ class Application(ctk.CTk):
         self.geometry('700x400')
         self.resizable(False, False)
 
+        self.after_objects = set()
+
         self.iconbitmap('assets\\icon\\icon.ico')
 
         self.changeModeHubButton = ctk.CTkButton(self, text='', width=0, fg_color='transparent',
@@ -288,7 +566,8 @@ class Application(ctk.CTk):
                                                  image=ctk.CTkImage(
                                                      light_image=Image.open('assets\\textures\\mode_light.png'),
                                                      dark_image=Image.open('assets\\textures\\mode_dark.png')),
-                                                 cursor='hand2', command=lambda: changeMode('dark' if APPEARANCE_MODE != 'dark' else 'light'))
+                                                 cursor='hand2', command=lambda: changeMode(
+                'dark' if APPEARANCE_MODE != 'dark' else 'light'))
         self.changeModeHubButton.grid(row=1, column=3, sticky='w', padx=5, pady=(3, 0))
 
         self.grid_columnconfigure(3, weight=1)
@@ -338,15 +617,15 @@ class Application(ctk.CTk):
             return
         self.current_index += 1
         self.subtitleText.configure(text=SUBTEXTS[self.current_subtext][:self.current_index])
-        self.after(75, self.add_subtitle_movement_event)
+        self.after_objects.add(self.after(75, self.add_subtitle_movement_event))
 
     def delete_subtitle_movement_event(self):
         if self.subtitleText.cget('text').strip() == '':
             self.current_subtext += 1
-            self.after(1000, self.add_subtitle_movement_event)
+            self.after_objects.add(self.after(1000, self.add_subtitle_movement_event))
         else:
             self.subtitleText.configure(text=self.subtitleText.cget('text')[:-1])
-            self.after(80, self.delete_subtitle_movement_event)
+            self.after_objects.add(self.after(75, self.delete_subtitle_movement_event))
 
 
 client = Application()
