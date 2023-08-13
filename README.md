@@ -5,7 +5,7 @@ An encryption application that allows you to safely encrypt and decrypt your mes
 
 ### How to download and run the application?
 #### Run through an installer:
-> 1. Click [here](https://github.com/ItsHungg/Cryptography/releases/download/v1.1.1/cryptography_installer.exe) to install the installer.
+> 1. Click [here](https://github.com/ItsHungg/Cryptography/releases/download/v1.2.0/cryptography-setup_v1.2.0.exe) to install the installer.
 > 2. After the installer was installed, open it.
 > 3. Choose the output directory and press `Install`.
 > 4. Wait for the process to finish and press `Close`.
