@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.<br>
-(**Note:** The format is mostly based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html))
+(**Note:** The format is mostly based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/))
 
 **Format:** `[x.y.z] - mm/dd/yyyy`
 <hr>
@@ -12,10 +12,10 @@ All notable changes to this project will be documented in this file.<br>
 - Users now can clear the encrypted message and token results by right-clicking on it
 ### Changed
 - The setting window and the theme editor can only be opened once
-- Saving theme without auto-restart will close the setting window
+- Saving the theme without auto-restart will close the setting window
 - Copying an empty message or token will result in a warning
 ### Fixed
-- Fixed the looped set appending to prevent the code from being overload because it's too large
+- Fixed the looped set appending to prevent the code from being overloaded because it's too large
 
 ## [1.2.0] - 06/27/2023
 ### Added
